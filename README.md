@@ -86,7 +86,7 @@ bash get_weights.sh
 
 ### Inference a video
 ```bash
-python3 run.py --input_video ./assets/example_videos/davis_rollercoaster.mp4 --output_dir ./outputs --encoder vitl
+python3 run.py --input_video ./assets/maila/ --output_dir ./outputs/ --encoder vitl --grayscale --save_npz
 ```
 
 Options:
