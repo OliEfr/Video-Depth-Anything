@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     qt5-qmake \
     qtbase5-dev \
     xvfb \
+    ffmpeg \
     python3-tk \ 
     && rm -rf /var/lib/apt/lists/* && apt-get clean
 
@@ -61,8 +62,8 @@ COPY --chown=${USERNAME}:${USERNAME} requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy and run weights script
-COPY --chown=${USERNAME}:${USERNAME} get_weights.sh .
-RUN chmod +x get_weights.sh
+COPY --chown=${USERNAME}:${USERNAME} get_weights.sh . 
+RUN chmod +x get_weights.sh 
 RUN bash ./get_weights.sh
 
-RUN  pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu118
+RUN pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu118

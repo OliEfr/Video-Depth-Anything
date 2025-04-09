@@ -99,7 +99,7 @@ Options:
 - `--target_fps` (optional): target fps of the input video, `-1` means the original fps
 - `--fp32` (optional): Use `fp32` precision for inference. By default, we use `fp16`.
 - `--grayscale` (optional): Save the grayscale depth map, without applying color palette.
-- `--save_npz` (optional): Save the depth map in `npz` format.
+- `--save_npz` (optional): Save the depth map in `npz` and `npy` format.
 - `--save_exr` (optional): Save the depth map in `exr` format.
 
 ## Citation

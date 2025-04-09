@@ -4,6 +4,7 @@
         "dockerfile": "Dockerfile",
         "context": ".."
     },
+    "postCreateCommand": "mv ./home/vscode/checkpoints/ workspaces/Video-Depth-Anything/",
     "customizations": {
         "vscode": {
             "extensions": [
