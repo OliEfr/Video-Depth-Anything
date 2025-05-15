@@ -21,11 +21,10 @@ Download the checkpoints and put them under the `checkpoints` directory.
 ## Use our models
 ### Running script on video
 ```bash
-python3 run.py \
-    --input_video <YOUR_VIDEO_PATH> \
-    --output_dir <YOUR_OUTPUT_DIR>
+python3 run.py --input_video ../assets/slow_1313807000/undist_rgb_half_size --output_dir ./outputs/ --encoder vitl --grayscale --save_npz
 ```
 ### Project video to point clouds
+NOTE: not working for now due to dependency issues
 ```bash
 python3 depth_to_pointcloud.py \
     --input_video <YOUR_VIDEO_PATH> \
