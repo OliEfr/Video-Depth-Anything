@@ -15,9 +15,52 @@ import argparse
 import numpy as np
 import os
 import torch
+import os 
+import re
 
 from video_depth_anything.video_depth import VideoDepthAnything
 from utils.dc_utils import read_video_frames, save_video
+
+def is_image_file(filename):
+    return re.match(r'.*\.(png|jpg|jpeg)$', filename, re.IGNORECASE)
+
+
+
+def create_video_from_images(directory):
+    image_files = sorted(f for f in os.listdir(directory) if is_image_file(f))
+    if not image_files:
+        print(f"No image files found in '{directory}'.")
+        return
+
+    # Create input.txt file listing frames in order
+    input_txt_path = os.path.join(directory, "input.txt")
+    with open(input_txt_path, "w") as f:
+        for filename in image_files:
+            f.write(f"file '{filename}'\n")
+
+    # Prepare output video path
+    dir_name = os.path.basename(os.path.abspath(directory))
+    output_file = os.path.join(directory, f"{dir_name}.mp4")
+
+    # Construct the ffmpeg command
+    cmd = (
+        f'cd "{directory}" && '
+        f'ffmpeg -y -r 30 -f concat -safe 0 -i input.txt '
+        f'-c:v libx264 -pix_fmt yuv420p "{dir_name}.mp4"'
+    )
+
+    print(f"Running command: {cmd}")
+    result = os.system(cmd)
+
+    # Clean up
+    os.remove(input_txt_path)
+
+    if result == 0:
+        print(f"Video successfully created: {output_file}")
+    else:
+        print("ffmpeg command failed.")
+        
+    return output_file
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Video Depth Anything')
@@ -39,6 +82,11 @@ if __name__ == '__main__':
     model_configs = {
         'vitl': {'encoder': 'vitl', 'features': 256, 'out_channels': [256, 512, 1024, 1024]},
     }
+    
+    if os.path.isdir(args.input_video):
+        print(f"Input is a directory. Converting images to video...")
+        output_file = create_video_from_images(args.input_video)
+        args.input_video = output_file
 
     video_depth_anything = VideoDepthAnything(**model_configs[args.encoder])
     video_depth_anything.load_state_dict(torch.load(f'./checkpoints/metric_video_depth_anything_{args.encoder}.pth', map_location='cpu'), strict=True)
@@ -59,20 +107,9 @@ if __name__ == '__main__':
     if args.save_npz:
         depth_npz_path = os.path.join(args.output_dir, os.path.splitext(video_name)[0]+'_depths.npz')
         np.savez_compressed(depth_npz_path, depths=depths)
-    if args.save_exr:
-        depth_exr_dir = os.path.join(args.output_dir, os.path.splitext(video_name)[0]+'_depths_exr')
-        os.makedirs(depth_exr_dir, exist_ok=True)
-        import OpenEXR
-        import Imath
-        for i, depth in enumerate(depths):
-            output_exr = f"{depth_exr_dir}/frame_{i:05d}.exr"
-            header = OpenEXR.Header(depth.shape[1], depth.shape[0])
-            header["channels"] = {
-                "Z": Imath.Channel(Imath.PixelType(Imath.PixelType.FLOAT))
-            }
-            exr_file = OpenEXR.OutputFile(output_exr, header)
-            exr_file.writePixels({"Z": depth.tobytes()})
-            exr_file.close()
+        depth_npy_path = os.path.join(args.output_dir, os.path.splitext(video_name)[0]+'_depths.npy')
+        np.save(depth_npy_path, depths)
+
 
     
 
